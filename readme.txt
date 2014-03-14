@@ -1,4 +1,4 @@
-=== Woocommerce favicon cart badge ===
+=== Woocommerce price by country ===
 Contributors: sweet-homes
 Tags: woocommerce, price by country, extension, geoprice
 Donate link: http://www.sweethomes.es/
