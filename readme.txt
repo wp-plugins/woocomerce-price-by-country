@@ -1,4 +1,4 @@
-=== Woocommerce price by country ===
+=== Woocommerce Price by Country ===
 Contributors: sweet-homes
 Tags: woocommerce, price by country, extension, geoprice
 Donate link: http://www.sweethomes.es/
