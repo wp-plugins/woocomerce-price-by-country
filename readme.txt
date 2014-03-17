@@ -1,5 +1,5 @@
 === Woocommerce Price by Country ===
-Contributors: sweet-homes
+Contributors: Sweet Homes
 Tags: woocommerce, price by country, extension, geoprice
 Donate link: http://www.sweethomes.es/
 Requires at least: 3.0.1
