@@ -1,6 +1,6 @@
 <?php 
 /*
-Version: 0.2
+Version: 0.3
 Author: Sweet Homes
 Author URI: http://www.sweethomes.es
 Email: info@sweethomes.es
