@@ -3,7 +3,7 @@
 Plugin Name: WooCommerce Price by Country
 Plugin URI:  http://www.sweethomes.es
 Description: Allows you to set the prices of a product according to the user's country
-Version: 0.1
+Version: 0.2
 Author: Sweet Homes
 Author URI: http://www.sweethomes.es
 Email: info@sweethomes.es
@@ -27,6 +27,7 @@ class woocommerce_price_by_country {
 		add_action( 'woocommerce_product_after_variable_attributes', array( &$this, 'add_variable_attributes'), 1, 2 );
 		
 		add_action( 'woocommerce_product_options_pricing', array( &$this, 'add_simple_price' ), 1 );
+		
 		add_action(	'wp_enqueue_scripts', array( &$this, 'wpbc_enqueue_scripts' ), 1);
 		add_action(	'wp_footer', array( &$this, 'wpbc_footer_script' ), 1000);
 	}
@@ -62,16 +63,91 @@ class woocommerce_price_by_country {
 		add_filter( 'woocommerce_empty_price_html', array( &$this, 'maybe_return_wholesale_price' ), 1, 2 );
 
 		add_filter( 'woocommerce_get_cart_item_from_session', array( &$this, 'get_item_from_session' ), 999, 1 );
-
+		
+		
+				
+		$this->settings = get_option( 'woocommerce_global_'. $this->idName . '_settings' );
+		$defaults = array ( 'wpbc_price_checkoutselector' => 'billing');
+		
+		if(empty($this->settings)){
+			$this->settings = wp_parse_args( $this->settings, $defaults );
+		}
+		
 		
 	}
 
+
+	/* USER-AGENTS Tnks to iamandrus ## http://stackoverflow.com/a/6524325 ##
+	========================================================================== */
+	function check_user_agent ( $type = NULL ) {
+	        $user_agent = strtolower ( $_SERVER['HTTP_USER_AGENT'] );
+	        if ( $type == 'bot' ) {
+	                // matches popular bots
+	                if ( preg_match ( "/googlebot|adsbot|yahooseeker|yahoobot|msnbot|watchmouse|pingdom\.com|feedfetcher-google/", $user_agent ) ) {
+	                        return true;
+	                        // watchmouse|pingdom\.com are "uptime services"
+	                }
+	        } else if ( $type == 'browser' ) {
+	                // matches core browser types
+	                if ( preg_match ( "/mozilla\/|opera\//", $user_agent ) ) {
+	                        return true;
+	                }
+	        } else if ( $type == 'mobile' ) {
+	                // matches popular mobile devices that have small screens and/or touch inputs
+	                // mobile devices have regional trends; some of these will have varying popularity in Europe, Asia, and America
+	                // detailed demographics are unknown, and South America, the Pacific Islands, and Africa trends might not be represented, here
+	                if ( preg_match ( "/phone|iphone|itouch|ipod|symbian|android|htc_|htc-|palmos|blackberry|opera mini|iemobile|windows ce|nokia|fennec|hiptop|kindle|mot |mot-|webos\/|samsung|sonyericsson|^sie-|nintendo/", $user_agent ) ) {
+	                        // these are the most common
+	                        return true;
+	                } else if ( preg_match ( "/mobile|pda;|avantgo|eudoraweb|minimo|netfront|brew|teleca|lg;|lge |wap;| wap /", $user_agent ) ) {
+	                        // these are less common, and might not be worth checking
+	                        return true;
+	                }
+	        }
+	        return false;
+	}
+
+
 	
 	function wpbc_enqueue_scripts() {
-		
-		wp_enqueue_script('google-jsapi', 'https://www.google.com/jsapi');
-		wp_enqueue_script('jquery-cookie', '//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.0/jquery.cookie.min.js');
 
+	    $assets_path = str_replace( array( 'http:', 'https:' ), '', plugins_url() ) . '/woocommerce/assets/';
+		wp_enqueue_script('google-jsapi', 'https://www.google.com/jsapi');
+		wp_enqueue_script('jquery-cookie', '//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.0/jquery.cookie.min.js', array( 'jquery' ), '1.0.0', false );
+
+		
+		$ismobile = $this->check_user_agent('mobile');
+		
+		if($ismobile) {
+			if($this->settings['wpbc_price_checkoutselector'] == 'billing'):
+				wp_enqueue_script('pbc-billing', plugin_dir_url( __FILE__ ) . 'comple/pbc-billing.js', array( 'jquery', 'wc-checkout', 'google-jsapi', 'jquery-cookie'), '1.0.0', false);
+			elseif($this->settings['wpbc_price_checkoutselector'] == 'shipping'):
+				wp_enqueue_script('pbc-shipping', plugin_dir_url( __FILE__ ) . 'comple/pbc-shipping.js', array( 'jquery', 'wc-checkout', 'google-jsapi', 'jquery-cookie' ), '1.0.0', false);
+			endif;
+		} else {
+			if ( get_option( 'woocommerce_enable_chosen' ) == 'yes' ) {
+		
+				wp_enqueue_script( 'base-chosen', $assets_path . 'js/chosen/chosen.jquery.min.js', array( 'jquery' ), '1.0.0', false );
+				wp_enqueue_style( 'woocommerce_chosen_styles', $assets_path . 'css/chosen.css' );
+			
+				if($this->settings['wpbc_price_checkoutselector'] == 'billing'):
+					wp_enqueue_script('pbc-chosen', plugin_dir_url( __FILE__ ) . 'comple/pbc-chosen-billing.js', array( 'jquery', 'wc-checkout', 'google-jsapi', 'jquery-cookie',  'base-chosen' ), '1.0.0', false);
+				elseif($this->settings['wpbc_price_checkoutselector'] == 'shipping'):
+					wp_enqueue_script('pbc-chosen', plugin_dir_url( __FILE__ ) . 'comple/pbc-chosen-shipping.js', array( 'jquery', 'wc-checkout', 'google-jsapi', 'jquery-cookie',  'base-chosen'  ), '1.0.0', false);
+				endif;
+	
+			} else {
+				if($this->settings['wpbc_price_checkoutselector'] == 'billing'):
+					wp_enqueue_script('pbc-billing', plugin_dir_url( __FILE__ ) . 'comple/pbc-billing.js', array( 'jquery', 'wc-checkout', 'google-jsapi', 'jquery-cookie'), '1.0.0', false);
+				elseif($this->settings['wpbc_price_checkoutselector'] == 'shipping'):
+					wp_enqueue_script('pbc-shipping', plugin_dir_url( __FILE__ ) . 'comple/pbc-shipping.js', array( 'jquery', 'wc-checkout', 'google-jsapi', 'jquery-cookie' ), '1.0.0', false);
+				endif;
+			}
+
+		}
+
+
+		
 	}
 
 
@@ -80,15 +156,17 @@ class woocommerce_price_by_country {
 		$c = new WC_Countries();
 	
 		$basecountry = $c->get_base_country();
-		
-   		$inline_js = "<!-- WooCommerce price by country JavaScript-->\n<script type=\"text/javascript\">\n jQuery(document).ready(function($) {";
-   		$inline_js .= "\n if (google.loader.ClientLocation) {\n
-					var country_code = google.loader.ClientLocation.address.country_code;\n
-						$.cookie('country', country_code, { expires: 7 });\n
-					}else{\n 
-						$.cookie('country', '".$basecountry."', { expires: 7 });\n
-					}\n";
-		$inline_js .="\n});\n</script>\n";
+   		$inline_js = "<!-- WooCommerce price by country JavaScript-->\n<script type=\"text/javascript\">\n jQuery(document).ready(function($) { \n";
+   		$inline_js .= "var country = $.cookie('country'); \n ";
+   		$inline_js .= "\n if (country) { }else{ \n ";
+   		$inline_js .= "\n if (google.loader.ClientLocation ) { \n
+						var country_code = google.loader.ClientLocation.address.country_code; \n
+							$.cookie('country', country_code, { expires: 7 }); \n
+						}else{ \n 
+							$.cookie('country', '".$basecountry."', { expires: 7 }); \n
+						} \n
+					} \n";
+		$inline_js .="\n});\n</script> \n";
    		
 		echo $inline_js;
 	}
@@ -110,23 +188,17 @@ class woocommerce_price_by_country {
 
 			$_product = get_product( $item_data['product_id'] ); 
 
-			if ( isset( $item_data['variation_id'] ) && 'variable' == $_product->product_type ) 
+			if ( isset( $item_data['variation_id'] ) && 'variable' == $_product->product_type ):
 				$level_price = get_post_meta( $item_data['variation_id' ], '_' . $group . '_price', true );
-
-			else if ( 'simple' == $_product->product_type || 'external' == $_product->product_type )
+			elseif ( 'simple' == $_product->product_type || 'external' == $_product->product_type ):
 				$level_price = get_post_meta( $item_data['product_id' ], '_' . $group . '_price', true );
-
-
-			else // all other product types - possibly incompatible with custom product types added by other plugins\
+			else: // all other product types - possibly incompatible with custom product types added by other plugins\
 				$level_price = get_post_meta( $item_data['product_id' ], '_' . $group . '_price', true );
+			endif;
 
 			if ( $level_price ) { 
-
 				$item_data['data']->price = $level_price;
-				
 				$item_data['data']->regular_price = $level_price;
-
-
 			}
 
 		}
@@ -171,37 +243,58 @@ class woocommerce_price_by_country {
 				}
 
 
-				$price = '<span class="from">' . __('From:', 'woocomerce-price-by-country') . ' </span>' . woocommerce_price( $min_price );
+				$price = '<span class="from">' . __('From:', 'woocomerce-price-by-country') . ' </span>' . wc_price( $min_price );
 
 			} elseif ( $_product->is_type( $vtype ) ) {
 
-				$wprice_min = get_post_meta( $_product->id, 'min_variation_' . $group . '_price', true );
+				/*$wprice_min = get_post_meta( $_product->id, 'min_variation_' . $group . '_price', true );
+				$wprice_max = get_post_meta( $_product->id, 'max_variation_' . $group . '_price', true );*/
 				
-				$wprice_max = get_post_meta( $_product->id, 'max_variation_' . $group . '_price', true );
+				$wprice_min = $_product->get_variation_price( 'min', true ); // tnx Germán Oronoz Arbide <germanoronoz@gmail.com>
+				$wprice_max = $_product->get_variation_price( 'max', true ); // tnx Germán Oronoz Arbide <germanoronoz@gmail.com>
+				
 
-				if ( $wprice_min !== $wprice_max )
+				if ( $wprice_min !== $wprice_max ){
 					$price = '<span class="from">' . __( 'From:', 'woocomerce-price-by-country') . $wprice_min . ' </span>';
+				}
 
-				if ( !empty( $wprice_min ) && !empty( $wprice_max ) && $wprice_min == $wprice_max ) 
+				if ( !empty( $wprice_min ) && !empty( $wprice_max ) && $wprice_min == $wprice_max ){
 					return $price;
 				
-				else if ( !empty( $wprice_min ) )
-					$price = '<span class="from">' . __( 'From:', 'woocomerce-price-by-country') . ' ' . woocommerce_price( $wprice_min ) . ' </span>';
+				} elseif ( !empty( $wprice_min ) ){
+					$price = '<span class="from">' . __( 'From:', 'woocomerce-price-by-country') . ' ' . wc_price( $wprice_min ) . ' </span>';
 					
-				else { 
+				} else { 
 				
-					$wprice_min = get_post_meta( $_product->id, '_min_variation_regular_price', true );
+					$min_price = $product->get_variation_price( 'min', true );
+					$max_price = $product->get_variation_price( 'max', true );
 					
-					$wprice_max = get_post_meta( $_product->id, '_max_variation_regular_price', true );
+					if ($min_price != $max_price){
+						$price = sprintf( __( '%1$s', 'woocommerce' ), wc_price( $min_price ) );
+						$price2 = sprintf( __( '%1$s', 'woocommerce' ), wc_price( $max_price ) );
+						return $price.' - '.$price2;
+					} else {
+						$price = sprintf( __( '%1$s', 'woocommerce' ), wc_price( $min_price ) );
+						return $price;
+					}
 				
-					if ( $wprice_min !== $wprice_max )
+					$wprice_min = $_product->get_variation_price( 'min', true ); // tnx Germán Oronoz Arbide <germanoronoz@gmail.com>
+					$wprice_max = $_product->get_variation_price( 'max', true ); // tnx Germán Oronoz Arbide <germanoronoz@gmail.com>
+				
+					/*$wprice_min = get_post_meta( $_product->id, '_min_variation_regular_price', true );
+					$wprice_max = get_post_meta( $_product->id, '_max_variation_regular_price', true );*/
+				
+					if ( $wprice_min !== $wprice_max ):
 						$price = '<span class="from">' . __( 'From:', 'woocomerce-price-by-country') . $wprice_min . ' </span>';
+					endif;
 
-					if (  !empty( $wprice_min ) && !empty( $wprice_max ) && $wprice_min == $wprice_max ) 
+					if (  !empty( $wprice_min ) && !empty( $wprice_max ) && $wprice_min == $wprice_max ): 
 						return $price;
 					
-					else if ( !empty( $wprice_min ) )
-						$price = '<span class="from">' . __( 'From:', 'woocomerce-price-by-country') . ' ' . woocommerce_price( $wprice_min ) . ' </span>';
+					elseif ( !empty( $wprice_min ) ):
+						$price = '<span class="from">' . __( 'From:', 'woocomerce-price-by-country') . ' ' . wc_price( $wprice_min ) . ' </span>';
+						
+					endif;
 
 				}
 
@@ -210,36 +303,22 @@ class woocommerce_price_by_country {
 				$wprice_min = get_post_meta( $_product->id, '_' . $group . '_price', true );
 					
 				if ( isset( $wprice_min ) && $wprice_min > 0 )
-					$price = woocommerce_price( $wprice_min );
+					$price = wc_price( $wprice_min );
 
 				elseif ( '' === $wprice_min ) {
 				
 					$price = get_post_meta( $_product->id, '_price', true );
 					if ( !empty( $price ) )
-						$price = woocommerce_price( $price ); 
+						$price = wc_price( $price ); 
 						
 				} elseif ( 0 == $wprice_min ) 
 					$price = __( 'Free!', 'woocomerce-price-by-country' );
 				
-				if ( !empty( $wprice_min ) && 'yes' == $this->settings['show_regular_price'] || 'yes' == $this->settings['show_savings'] ) { 
 				
-					$rprice = get_post_meta( $_product->id, '_regular_price', true );
-
-					if ( empty( $wprice_min ) )
-						continue; 
-						
-					if ( floatval( $rprice ) > floatval( $wprice_min ) && 'yes' == $this->settings['show_regular_price'] ) 
-						$price .= '<br><span class="normal_price">' . $this->settings['show_regular_price_label'] . ' ' . woocommerce_price( $rprice ) . '</span>';
-					
-					$savings = ( floatval( $rprice ) - floatval( $wprice_min ) );
-					
-					if ( ( $savings < $rprice ) && 'yes' == $this->settings['show_savings'] ) 
-						$price .= '<br><span class="normal_price savings">' . $this->settings['show_savings_label'] . ' ' . woocommerce_price( $savings ) . '</span>';
-						
-				}
 			}
 
 		}
+
 
 		//$price = '0000';
 
@@ -314,10 +393,11 @@ class woocommerce_price_by_country {
 
 			if ( isset( $_product->variation_id )  ) {
 
-				if ( isset( $_product->variation_id ) ) 
+				if ( isset( $_product->variation_id ) ) {
 					$wholesale = get_post_meta( $_product->variation_id, '_' . $group . '_price', true );
-				else 
+				} else { 
 					$wholesale = '';
+				}
 
 				if ( intval( $wholesale ) > 0 ) 
 					$_product->product_custom_fields[ '_' . $group . '_price' ] = array( $wholesale );
@@ -327,13 +407,14 @@ class woocommerce_price_by_country {
 
 					$price = $_product->product_custom_fields[ '_' . $group . '_price'][0];
 
-				} elseif ( $_product->price === '' ) 
+				} elseif ( $_product->price === '' ) { 
 
 					$price = '';
 
-				elseif ($_product->price == 0 ) 
+				} elseif ($_product->price == 0 ) {
 
 					$price = __( 'Free!', 'woocomerce-price-by-country' );
+				}
 
 				return $price; 
 
@@ -344,7 +425,7 @@ class woocommerce_price_by_country {
 			if ( !empty( $rprice ) )
 				return $rprice;
 		}
-		//$price = '0000';
+
 		return $price;
 	}
 	
@@ -364,23 +445,6 @@ class woocommerce_price_by_country {
 			$price = $this->maybe_return_variation_price( '', $variation_obj );
 			
 			$variation['price_html'] = '<span class="price">' . $price . '</span>';
-
-			if ( ( 'yes' == $this->settings['show_regular_price'] || 'yes' == $this->settings['show_savings'] ) ) { 
-	
-				$reg_price = get_post_meta( $variation['variation_id'], '_regular_price', true );
-
-				$group_price = get_post_meta( $variation['variation_id'], '_' . $group . '_price', true );
-
-				if ( ( floatval( $role_price ) < floatval( $reg_price ) ) && 'yes' == $this->settings['show_regular_price'] ) 
-					$variation['price_html']  .= '<br><span class="price normal_price">' . $this->settings['show_regular_price_label'] . ' <span class="amount">' . woocommerce_price( $reg_price ) . '</span></span>';
-				
-				$savings = ( floatval( $reg_price ) - floatval( $group_price ) );
-
-				if ( $savings < $reg_price && 'yes' == $this->settings['show_savings'] ) 
-					$variation['price_html']  .= '<br><span class="price normal_price savings">' . $this->settings['show_savings_label'] . ' <span class="amount">' . woocommerce_price( $savings ) . '</span></span>';
-					
-			}
-
 
 		}
 		
@@ -426,11 +490,11 @@ class woocommerce_price_by_country {
 			
 			$max_variation_wholesale_price = get_post_meta( $_product->id, 'max_variation_' . $group . '_price', true );
 
-			if ( $min_variation_wholesale_price !== $max_variation_wholesale_price )
-				$price = '<span class="from">' . __( 'From:', 'woocomerce-price-by-country') . ' ' .  woocommerce_price( $min_variation_wholesale_price ) . ' </span>';
-				
-			else 
-				$price = '<span class="from">' . woocommerce_price( $min_variation_wholesale_price ) . ' </span>';
+			if ( $min_variation_wholesale_price !== $max_variation_wholesale_price ):
+				$price = '<span class="from">' . __( 'From:', 'woocomerce-price-by-country') . ' ' .  wc_price( $min_variation_wholesale_price ) . ' </span>';
+			else:
+				$price = '<span class="from">' . wc_price( $min_variation_wholesale_price ) . ' </span>';
+			endif;
 		}
 		
 		return $price;
@@ -468,7 +532,7 @@ class woocommerce_price_by_country {
 		
 			// validacion de la cookie
 			if ( $is_variation && in_array($country, $element['countries']) ) { 
-				$price = woocommerce_price( get_post_meta( $_product->variation_id, '_' . $group . '_price', true ) );
+				$price = wc_price( get_post_meta( $_product->variation_id, '_' . $group . '_price', true ) );
 				return $price;
 			}
 		}
@@ -485,7 +549,7 @@ class woocommerce_price_by_country {
 
 					if ( is_array( $product->product_custom_fields[ '_' . $group . '_price' ] ) && $product->product_custom_fields[ '_' . $group . '_price'][0] > 0 ) {
 
-						$price = woocommerce_price( $product->product_custom_fields[ '_' . $group . '_price'][0] );
+						$price = wc_price( $product->product_custom_fields[ '_' . $group . '_price'][0] );
 
 					} elseif ( $product->price === '' ) 
 
@@ -646,6 +710,7 @@ class woocommerce_price_by_country {
 	function get_countries() {
 
 		$settings = get_option( 'woocommerce_price_by_country_settings' );
+
 		
 		if ( empty( $settings ) ):
 			return;
@@ -656,6 +721,9 @@ class woocommerce_price_by_country {
 
 }
 
+// end Class
+
+
 function wpbc_no_woo_warning(){
     ?>
     <div class="message error"><p><?php printf(__('Woocomerce Price by Country is enabled but not effective. It requires <a href="%s">WooCommerce</a> in order to work.', 'woocomerce-price-by-country'), 
@@ -665,7 +733,7 @@ function wpbc_no_woo_warning(){
 
 
 if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
-	$woocommerce_price_by_country = new woocommerce_price_by_country();
+	$wc_price_by_country = new woocommerce_price_by_country();
 } else {
 	add_action('admin_notices', 'wpbc_no_woo_warning');
         return false;     
@@ -695,4 +763,208 @@ function sw_pbc_pricing_init( $integrations ) {
 	
 	return $integrations;
 }
+
+
+//////////////////////////////////// New
+
+/* USER-AGENTS Tnks to iamandrus ## http://stackoverflow.com/a/6524325 ##
+	========================================================================== */
+	function check_user_agent ( $type = NULL ) {
+	        $user_agent = strtolower ( $_SERVER['HTTP_USER_AGENT'] );
+	        if ( $type == 'bot' ) {
+	                // matches popular bots
+	                if ( preg_match ( "/googlebot|adsbot|yahooseeker|yahoobot|msnbot|watchmouse|pingdom\.com|feedfetcher-google/", $user_agent ) ) {
+	                        return true;
+	                        // watchmouse|pingdom\.com are "uptime services"
+	                }
+	        } else if ( $type == 'browser' ) {
+	                // matches core browser types
+	                if ( preg_match ( "/mozilla\/|opera\//", $user_agent ) ) {
+	                        return true;
+	                }
+	        } else if ( $type == 'mobile' ) {
+	                // matches popular mobile devices that have small screens and/or touch inputs
+	                // mobile devices have regional trends; some of these will have varying popularity in Europe, Asia, and America
+	                // detailed demographics are unknown, and South America, the Pacific Islands, and Africa trends might not be represented, here
+	                if ( preg_match ( "/phone|iphone|itouch|ipod|symbian|android|htc_|htc-|palmos|blackberry|opera mini|iemobile|windows ce|nokia|fennec|hiptop|kindle|mot |mot-|webos\/|samsung|sonyericsson|^sie-|nintendo/", $user_agent ) ) {
+	                        // these are the most common
+	                        return true;
+	                } else if ( preg_match ( "/mobile|pda;|avantgo|eudoraweb|minimo|netfront|brew|teleca|lg;|lge |wap;| wap /", $user_agent ) ) {
+	                        // these are less common, and might not be worth checking
+	                        return true;
+	                }
+	        }
+	        return false;
+	}
+
+
+function wpbc_footer_chosen_selector_script(){
+
+		$inline_js1 = "<!-- WooCommerce price by country Selector JavaScript-->\n<script type=\"text/javascript\">\n jQuery(document).ready(function($) { \n";
+   		$inline_js1 .= " $('select#pbc_country_selector').chosen( { search_contains: true } ); \n";
+		$inline_js1 .= " $('select#pbc_country_selector').val($.cookie('country')); \n";
+		$inline_js1 .= " $('select#pbc_country_selector').trigger('chosen:updated') \n";
+		
+		$inline_js1 .= " $('select#pbc_country_selector').on('change', function(evt, params) { \n";
+			$inline_js1 .= " var valueSel = $('#pbc_country_selector').val(); \n";
+			$inline_js1 .= " $.cookie('country', valueSel, { expires: 7 , path: '/' }); \n";
+			$inline_js1 .= " window.location.reload(true);";
+		$inline_js1 .= "}); \n";
+		
+	$inline_js1 .="\n});\n</script> \n";
+		
+	echo $inline_js1;
+}
+
+
+function wpbc_footer_selector_script(){
+
+		$inline_js1 = "<!-- WooCommerce price by country Selector JavaScript-->\n<script type=\"text/javascript\">\n jQuery(document).ready(function($) { \n";
+		
+			$inline_js1 .= "$('select#pbc_country_selector').change(function(){ \n";
+			    $inline_js1 .= "var valueSel2 = $(this).val(); \n";
+				$inline_js1 .= "$.cookie('country', valueSel2, { expires: 7 , path: '/' }); \n";
+				$inline_js1 .= " window.location.reload(true);";
+			$inline_js1 .= "}); \n";
+	$inline_js1 .="\n});\n</script> \n";
+		
+	echo $inline_js1;
+}
+
+
+
+
+
+add_action( 'get_pbc_country_dropdown', 'pbc_country_dropdown' );
+function pbc_country_dropdown() {
+	
+	global $woocommerce;
+	
+	
+	$alowedType = get_option( 'woocommerce_allowed_countries' );
+	
+	
+	$c = new WC_Countries();
+	
+	if($alowedType == 'specific'):
+		
+		$woocommerce_specific_allowed_countries = get_option('woocommerce_specific_allowed_countries');
+		
+		$country_list = unserialize($woocommerce_specific_allowed_countries);
+	endif;
+	
+	//var_dump($c);
+		
+	if ( !isset( $s ) )
+		$s = array();
+		
+	$ismobile = check_user_agent('mobile');
+	if($ismobile) {
+		add_action(	'wp_footer','wpbc_footer_selector_script' , 1000);
+	} else {
+		if ( get_option( 'woocommerce_enable_chosen' ) == 'yes' ) {
+			add_action(	'wp_footer','wpbc_footer_chosen_selector_script' , 1000);
+		} else {
+			add_action(	'wp_footer','wpbc_footer_selector_script' , 1000);
+		}
+	}	
+	$settings = get_option( 'woocommerce_global_price_by_country_settings' );
+	$extraClasses = $settings['wpbc_price_countrySelectorClass'];
+		
+	$output .='<select id="pbc_country_selector" name="pbc_country_selector" class="chosen_select '.$extraClasses.'">';
+	
+	if($alowedType == 'specific'):
+		foreach( $woocommerce_specific_allowed_countries as $k => $v ) {
+			$output .='<option value="' . $v . '" ' . selected( $_COOKIE['country'], $v , false) . '>' . $c->countries[$v] . '</option> ';
+		}
+	else:
+		foreach( $c->countries as $k => $v ) {
+			$output .='<option value="' . $k . '" ' . selected( $_COOKIE['country'], $k , false) . '>' . $v . '</option> ';
+		}
+	
+	endif;
+	
+	
+	$output .='</select>';
+	
+	echo $output;
+}
+
+add_action( 'after_setup_theme', 'pbc_get_permited_countries' );
+
+
+function pbc_get_permited_countries() {
+	
+	$country = $_COOKIE['country'];
+	
+	$settings = get_option( 'woocommerce_price_by_country_settings' );
+	
+	if($settings):
+	
+		foreach( unserialize($settings) as $group => $element ):
+			
+			if($element['countries']):
+				foreach($element['countries'] as $key => $countryL):
+					if($countryL == $country):
+						$inList = 'yes';
+					endif;
+				endforeach;
+			endif;
+			
+		endforeach;
+	
+	endif;
+	
+	$output = ($inList == 'yes') ? 'inside' : 'outside';
+	
+	return $output;
+	
+}
+
+
+$countries = pbc_get_permited_countries();
+
+if($countries == 'outside'){
+	add_action('init','remove_loop_button');
+}
+
+function remove_loop_button(){
+	remove_action( 'woocommerce_after_shop_loop_item', 'woocommerce_template_loop_add_to_cart', 10 );
+	remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 30 );
+	
+	function sw_custom_variation_price( $price, $product ) {
+	 
+	 	$settingsGlobal = get_option( 'woocommerce_global_price_by_country_settings' );
+		$target_product_types = array( 
+			'variable' 
+		);
+	 
+		if ( in_array ( $product->product_type, $target_product_types ) ) {
+			// if variable product return and empty string
+			return $settingsGlobal['wpbc_outsideMesage'];
+		}
+	 
+		// return normal price
+		return $price;
+	}
+	add_filter('woocommerce_get_price_html', 'sw_custom_variation_price', 10, 2);
+	
+}
+
+
+add_action( 'wp_print_scripts', 'pbc_dequeueScripts', 99 );
+ 
+function pbc_dequeueScripts() {
+
+    //first check that woo exists to prevent fatal errors
+    if ( function_exists( 'is_woocommerce' ) ) {
+        //dequeue scripts and styles
+        if ( is_checkout() ) {
+            wp_dequeue_script( 'wc-chosen' );
+        }
+    }
+ 
+}
+
+
 ?>

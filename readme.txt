@@ -23,6 +23,14 @@ Add as many groups as you like using the built-in mini group manager (see the se
 Remove an added group at any time
 Set individual prices for any of your groups (see the product edit screenshot)
 
+0.2 added
+
+You can choose whether the modifier price is based on the shipping adress or billing
+You can add a country selector on your theme with the code: do_action ('get_pbc_country_dropdown').
+
+0.3 added
+the country groups are modificable
+
 * Requires WooCommerce 2.x or newer.
 
 == Installation ==
@@ -31,12 +39,17 @@ Set individual prices for any of your groups (see the product edit screenshot)
 3. go to woocommerce > settings > integration tab > price by country option.
 4. push add new group button an then add many country groups as you like.
 5. go to product and define it's price by group.
+6. if you enter a country selector on your theme adds this code: do_action('get_pbc_country_dropdown')
 
 == Frequently Asked Questions ==
 
 = This plugin supports simple and variable products =
 
 Yes, of course.
+
+= You can add a country selector somewhere template =
+
+Yes, adding "do_action('get_pbc_country_dropdown')"; .
 
 == Screenshots ==
 1. Settings Section
@@ -45,7 +58,20 @@ Yes, of course.
 == Changelog ==
 = 0.1 =
 * Initial release.
+= 0.2 =
+- Added country selector by do_action('get_pbc_country_dropdown')
+- If country isn't in any country defined group, price and buy button disapear and is replaced by a configurable message.
+- compatibility with woocommerce 2.1
+= 0.3 =
+- Added ability to edit groups of countries.
+- Added Choice if the factor that modifies the final price of the product is shipping or billing address.
+- Added a message for when a user is in a country where we no have defined a price.
+- Country selector only shows the countries in which the user has defined to be sold
 
 == Upgrade Notice ==
 = 0.1 =
 * Initial release.
+= 0.2 =
+* Some improvements.
+= 0.3 =
+* Some Cool improvements.
