@@ -1,0 +1,21 @@
+/**
+ * Dequeue Chosen Script from Woocommerce.
+ *
+ * @Price By country Plugin
+ *
+ * @Sweethomes 2014.
+ */
+
+add_action( 'wp_enqueue_scripts', 'pbc_dequeueScripts', 99 );
+ 
+function pbc_dequeueScripts() {
+
+    //first check that woo exists to prevent fatal errors
+    if ( function_exists( 'is_woocommerce' ) ) {
+        //dequeue scripts and styles
+        if ( is_checkout() ) {
+            wp_dequeue_script( 'wc-chosen' );
+        }
+    }
+ 
+}
