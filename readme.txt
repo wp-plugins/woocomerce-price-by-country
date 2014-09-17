@@ -13,7 +13,7 @@ This plugin allows you to define the price of a product according to the country
 == Description ==
 **WooCommerce price by country** lets you set prices based on customer country. Your define your country groups (as many as you need), then set prices for those groups in each product.
 
-From that point on when a shopper conects to site automatically detect country by google ClientLocation api and they’ll see the product prices that you’ve set for that group and be able to buy at those price.  Prices appear across the store like any other product, meaning in the main shop page, category pages, cart, and checkout page.
+From that point on when a shopper connect’s to site automatically detect country by google ClientLocation api and they’ll see the product prices that you’ve set for that group and be able to buy at those price.  Prices appear across the store like any other product, meaning in the main shop page, category pages, cart, and checkout page.
 
 If the product has no country group price for the shopper’s  then shoppers can still buy at your regular price if you have a regular price set.
 
@@ -30,6 +30,9 @@ You can add a country selector on your theme with the code: do_action ('get_pbc_
 
 0.3 added
 the country groups are modificable
+
+0.31
+bug fixes
 
 * Requires WooCommerce 2.x or newer.
 
@@ -67,6 +70,9 @@ Yes, adding "do_action('get_pbc_country_dropdown')"; .
 - Added Choice if the factor that modifies the final price of the product is shipping or billing address.
 - Added a message for when a user is in a country where we no have defined a price.
 - Country selector only shows the countries in which the user has defined to be sold
+= 0.31 =
+- Dropdown bugfix.
+
 
 == Upgrade Notice ==
 = 0.1 =
@@ -75,3 +81,5 @@ Yes, adding "do_action('get_pbc_country_dropdown')"; .
 * Some improvements.
 = 0.3 =
 * Some Cool improvements.
+= 0.31 =
+* Bug Fixes.
