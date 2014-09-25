@@ -3,7 +3,7 @@
 Plugin Name: WooCommerce Price by Country
 Plugin URI:  http://www.sweethomes.es
 Description: Allows you to set the prices of a product according to the user's country
-Version: 0.32	
+Version: 0.33	
 Author: Sweet Homes
 Author URI: http://www.sweethomes.es
 Email: info@sweethomes.es
@@ -268,12 +268,14 @@ class woocommerce_price_by_country {
 					return $price;
 				
 				} elseif ( !empty( $wprice_min ) ){
-					$price = '<span class="from">' . __( 'From:', 'woocomerce-price-by-country') . ' ' . wc_price( $wprice_min ) . ' </span>';
+					$price = '<span class="from '.$group.'" >' . __( 'From:', 'woocomerce-price-by-country') . ' ' . wc_price( $wprice_min ) . ' </span>';
 					
 				} else { 
 				
-					$min_price = $product->get_variation_price( 'min', true );
-					$max_price = $product->get_variation_price( 'max', true );
+					$wprice_min = get_post_meta( $_product->id, 'min_variation_' . $group . '_price', true );
+					$wprice_max = get_post_meta( $_product->id, 'max_variation_' . $group . '_price', true );
+					/*$min_price = $product->get_variation_price( 'min', true );
+					$max_price = $product->get_variation_price( 'max', true );*/
 					
 					if ($min_price != $max_price){
 						$price = sprintf( __( '%1$s', 'woocommerce' ), wc_price( $min_price ) );
@@ -287,8 +289,8 @@ class woocommerce_price_by_country {
 					/*$wprice_min = $_product->get_variation_price( 'min', true ); // tnx Germán Oronoz Arbide <germanoronoz@gmail.com>
 					$wprice_max = $_product->get_variation_price( 'max', true ); // tnx Germán Oronoz Arbide <germanoronoz@gmail.com>*/
 				
-					$wprice_min = get_post_meta( $_product->id, '_min_variation_regular_price', true );
-					$wprice_max = get_post_meta( $_product->id, '_max_variation_regular_price', true );
+					/*$wprice_min = get_post_meta( $_product->id, '_min_variation_regular_price', true );
+					$wprice_max = get_post_meta( $_product->id, '_max_variation_regular_price', true );*/
 				
 					if ( $wprice_min !== $wprice_max ):
 						$price = '<span class="from">' . __( 'From:', 'woocomerce-price-by-country') . $wprice_min . ' </span>';
@@ -308,15 +310,15 @@ class woocommerce_price_by_country {
 
 				$wprice_min = get_post_meta( $_product->id, '_' . $group . '_price', true );
 					
-				if ( isset( $wprice_min ) && $wprice_min > 0 )
+				if ( isset( $wprice_min ) && $wprice_min > 0 ){
 					$price = wc_price( $wprice_min );
 
-				elseif ( '' === $wprice_min ) {
+				} elseif ( '' === $wprice_min ) {
 				
 					$price = get_post_meta( $_product->id, '_price', true );
-					if ( !empty( $price ) )
+					if ( !empty( $price ) ){
 						$price = wc_price( $price ); 
-						
+					}
 				} elseif ( 0 == $wprice_min ) 
 					$price = __( 'Free!', 'woocomerce-price-by-country' );
 				
@@ -388,7 +390,6 @@ class woocommerce_price_by_country {
 		$country = $_COOKIE['country'];
 		
 		$countries = $this->get_countries();
-		
 		if ( empty( $countries ) )
 			return $price;
 			
@@ -397,40 +398,56 @@ class woocommerce_price_by_country {
 			if ( !in_array($country, $element['countries'])  ) 
 				continue;
 
-			if ( isset( $_product->variation_id )  ) {
+			
+			if ( isset( $_product->variation_id ) ) {
 
-				if ( isset( $_product->variation_id ) ) {
+				//if ( isset( $_product->variation_id ) ) 
 					$wholesale = get_post_meta( $_product->variation_id, '_' . $group . '_price', true );
-				} else { 
-					$wholesale = '';
+				//else 
+				//	$wholesale = '';
+
+				if ( intval( $wholesale ) > 0 ) {
+				
+					$customPrice = $wholesale;
+				
+					//$_product->product_custom_fields[ '_' . $group . '_price' ] = array( $wholesale );
+					//var_dump($_product->product_custom_fields[ '_' . $group . '_price']);
+					
+					/*echo '<pre>';
+					var_dump($group);
+					var_dump($wholesale);
+					var_dump($customPrice);
+					echo '</pre>';*/
 				}
 
-				if ( intval( $wholesale ) > 0 ) 
-					$_product->product_custom_fields[ '_' . $group . '_price' ] = array( $wholesale );
+				//if ( isset( $_product->product_custom_fields[ '_' . $group . '_price' ] ) && is_array( $_product->product_custom_fields[ '_' . $group . '_price'] ) && $_product->product_custom_fields[ '_' . $group . '_price'][0] > 0 ) {
 
+				if(isset($customPrice) && $customPrice > 0){
 
-				if ( isset( $_product->product_custom_fields[ '_' . $group . '_price' ] ) && is_array( $_product->product_custom_fields[ '_' . $group . '_price'] ) && $_product->product_custom_fields[ '_' . $group . '_price'][0] > 0 ) {
+					$price = $customPrice;
 
-					$price = $_product->product_custom_fields[ '_' . $group . '_price'][0];
-
-				} elseif ( $_product->price === '' ) { 
-
+				} elseif ( $_product->price === '' ) {
 					$price = '';
-
-				} elseif ($_product->price == 0 ) {
-
+					
+				}elseif ($_product->price == 0 ) {
 					$price = __( 'Free!', 'woocomerce-price-by-country' );
+					
 				}
-
 				return $price; 
+				
 
 			}
 
-			$rprice = get_post_meta( $_product->id, '_' . $group . '_price', true );
+			$tier_price = get_post_meta( $_product->id, '_' . $group . '_price', true );
+			
+			if ( empty( $tier_price ) ) 
+				return $price;
+			else 
+				return $tier_price;
 
-			if ( !empty( $rprice ) )
-				return $rprice;
 		}
+		
+		//die();
 
 		return $price;
 	}
@@ -586,10 +603,15 @@ class woocommerce_price_by_country {
 	}
 	
 	
-	
-	
+	// process variable product meta
 	function process_product_meta_variable( $post_id ) {
+
+		/*$this->get_roles();
 		
+		if ( empty( $this->roles ) )
+			return;
+			*/
+
 		$variable_post_ids = $_POST['variable_post_id'];
 		
 		if ( empty( $variable_post_ids ) )
@@ -601,9 +623,12 @@ class woocommerce_price_by_country {
 			
 				if ( empty( $id ) || absint( $id ) <= 0 ) 
 					continue;
+				
+				//if ( '' == $_POST[ $role .  '_price' ][ $key ] )
+				//	continue;
 					
-				update_post_meta( $id, '_' . $group . '_price', floatval( $_POST[ $group .  '_price' ][ $key ] ) );
-			
+				update_post_meta( $id, '_' . $group	 . '_price', $_POST[ $group .  '_price' ][ $key ] );
+
 			}
 
 		}
@@ -626,18 +651,36 @@ class woocommerce_price_by_country {
 			foreach( $this->get_countries() as $group => $element ) {  
 			
 				foreach ( $children as $child ) {
-			
+				
 					$child_price = get_post_meta( $child, '_' . $group . '_price', true );
-
-					if ( !$child_price ) continue;
+					
+					
+					
+					if ( is_null( $child_price ) ) continue;
 		
 					// Low price
-					if ( !is_numeric( $lowest_price ) || $child_price < $lowest_price ) $lowest_price = $child_price;
-
+					if ( !is_numeric( $lowest_price ) || $child_price < $lowest_price ) {
+						$lowest_price = $child_price;
+						/*var_dump('detro');
+						var_dump($group);*/
+					} else {
+						$lowest_price = $child_price;
+					}
 					
 					// High price
 					if ( $child_price > $highest_price )
 						$highest_price = $child_price;
+						
+						
+					/*
+					// debug
+					echo '<pre>';
+					var_dump($group);
+					var_dump($highest_price);
+					var_dump($lowest_price);
+					var_dump($child_price);
+					echo '</pre>';	*/
+						
 				}
 				
 				update_post_meta( $post_parent, '_' . $group . '_price', $lowest_price );
@@ -647,11 +690,13 @@ class woocommerce_price_by_country {
 				update_post_meta( $post_parent, 'max_variation_' . $group . '_price', $highest_price );
 
 			}
-
+			// debug
+			//die();
 
 		}
+		
 	}
-	
+		
 	
 	
 	

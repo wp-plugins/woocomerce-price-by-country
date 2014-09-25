@@ -34,6 +34,9 @@ the country groups are modificable
 0.31
 bug fixes
 
+0.32
+bug fixes
+
 * Requires WooCommerce 2.x or newer.
 
 == Installation ==
@@ -72,6 +75,10 @@ Yes, adding "do_action('get_pbc_country_dropdown')"; .
 - Country selector only shows the countries in which the user has defined to be sold
 = 0.31 =
 - Dropdown bugfix.
+= 0.32 =
+- Dropdown bugfix.
+= 0.33 =
+- price fix in variable products.
 
 
 == Upgrade Notice ==
@@ -82,4 +89,8 @@ Yes, adding "do_action('get_pbc_country_dropdown')"; .
 = 0.3 =
 * Some Cool improvements.
 = 0.31 =
+* Bug Fixes.
+= 0.32 =
+* Bug Fixes.
+= 0.33 =
 * Bug Fixes.
