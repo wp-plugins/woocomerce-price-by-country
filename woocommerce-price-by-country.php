@@ -3,7 +3,7 @@
 Plugin Name: WooCommerce Price by Country
 Plugin URI:  http://www.sweethomes.es
 Description: Allows you to set the prices of a product according to the user's country
-Version: 0.31	
+Version: 0.32	
 Author: Sweet Homes
 Author URI: http://www.sweethomes.es
 Email: info@sweethomes.es
@@ -162,7 +162,7 @@ class woocommerce_price_by_country {
    		$inline_js .= "\n if (google.loader.ClientLocation ) { \n
 						var country_code = google.loader.ClientLocation.address.country_code; \n
 							$.cookie('country', country_code, { expires: 7 }); \n
-							$('select#pbc_country_selector').val(country_code)); \n
+							$('select#pbc_country_selector').val(country_code); \n
 							$('select#pbc_country_selector').trigger('chosen:updated') \n
 						}else{ \n 
 							$.cookie('country', '".$basecountry."', { expires: 7 }); \n
