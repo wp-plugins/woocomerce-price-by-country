@@ -162,11 +162,11 @@ class woocommerce_price_by_country {
    		$inline_js .= "\n if (google.loader.ClientLocation ) { \n
 						var country_code = google.loader.ClientLocation.address.country_code; \n
 							$.cookie('country', country_code, { expires: 7 }); \n
-							$('select#pbc_country_selector').val(country_code); \n
+							$('select#pbc_country_selector').val('country_code'); \n
 							$('select#pbc_country_selector').trigger('chosen:updated') \n
 						}else{ \n 
 							$.cookie('country', '".$basecountry."', { expires: 7 }); \n
-							$('select#pbc_country_selector').val(".$basecountry.")); \n
+							$('select#pbc_country_selector').val('".$basecountry."'); \n
 							$('select#pbc_country_selector').trigger('chosen:updated') \n
 						} \n
 					} \n";
@@ -215,6 +215,8 @@ class woocommerce_price_by_country {
 	
 	function maybe_return_wholesale_price( $price, $_product ) { 
 		
+		global $product;
+		
 		$country = $_COOKIE['country'];
 
 		$countries = $this->get_countries();
@@ -251,12 +253,12 @@ class woocommerce_price_by_country {
 
 			} elseif ( $_product->is_type( $vtype ) ) {
 
-				/*$wprice_min = get_post_meta( $_product->id, 'min_variation_' . $group . '_price', true );
-				$wprice_max = get_post_meta( $_product->id, 'max_variation_' . $group . '_price', true );*/
-				
+				$wprice_min = get_post_meta( $_product->id, 'min_variation_' . $group . '_price', true );
+				$wprice_max = get_post_meta( $_product->id, 'max_variation_' . $group . '_price', true );
+				/*
 				$wprice_min = $_product->get_variation_price( 'min', true ); // tnx Germán Oronoz Arbide <germanoronoz@gmail.com>
 				$wprice_max = $_product->get_variation_price( 'max', true ); // tnx Germán Oronoz Arbide <germanoronoz@gmail.com>
-				
+				*/
 
 				if ( $wprice_min !== $wprice_max ){
 					$price = '<span class="from">' . __( 'From:', 'woocomerce-price-by-country') . $wprice_min . ' </span>';
@@ -282,11 +284,11 @@ class woocommerce_price_by_country {
 						return $price;
 					}
 				
-					$wprice_min = $_product->get_variation_price( 'min', true ); // tnx Germán Oronoz Arbide <germanoronoz@gmail.com>
-					$wprice_max = $_product->get_variation_price( 'max', true ); // tnx Germán Oronoz Arbide <germanoronoz@gmail.com>
+					/*$wprice_min = $_product->get_variation_price( 'min', true ); // tnx Germán Oronoz Arbide <germanoronoz@gmail.com>
+					$wprice_max = $_product->get_variation_price( 'max', true ); // tnx Germán Oronoz Arbide <germanoronoz@gmail.com>*/
 				
-					/*$wprice_min = get_post_meta( $_product->id, '_min_variation_regular_price', true );
-					$wprice_max = get_post_meta( $_product->id, '_max_variation_regular_price', true );*/
+					$wprice_min = get_post_meta( $_product->id, '_min_variation_regular_price', true );
+					$wprice_max = get_post_meta( $_product->id, '_max_variation_regular_price', true );
 				
 					if ( $wprice_min !== $wprice_max ):
 						$price = '<span class="from">' . __( 'From:', 'woocomerce-price-by-country') . $wprice_min . ' </span>';
