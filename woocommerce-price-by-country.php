@@ -161,11 +161,11 @@ class woocommerce_price_by_country {
    		$inline_js .= "\n if (country) { }else{ \n ";
    		$inline_js .= "\n if (google.loader.ClientLocation ) { \n
 						var country_code = google.loader.ClientLocation.address.country_code; \n
-							$.cookie('country', country_code, { expires: 7 }); \n
-							$('select#pbc_country_selector').val('country_code'); \n
+							$.cookie('country', country_code, { expires: 7 , path: '/'  }); \n
+							$('select#pbc_country_selector').val('+country_code+'); \n
 							$('select#pbc_country_selector').trigger('chosen:updated') \n
 						}else{ \n 
-							$.cookie('country', '".$basecountry."', { expires: 7 }); \n
+							$.cookie('country', '".$basecountry."', { expires: 7 , path: '/'  }); \n
 							$('select#pbc_country_selector').val('".$basecountry."'); \n
 							$('select#pbc_country_selector').trigger('chosen:updated') \n
 						} \n
@@ -987,16 +987,17 @@ function remove_loop_button(){
 	 
 	 	$settingsGlobal = get_option( 'woocommerce_global_price_by_country_settings' );
 		$target_product_types = array( 
-			'variable' 
+			'variable',
+			'simple'
 		);
 	 
 		if ( in_array ( $product->product_type, $target_product_types ) ) {
 			// if variable product return and empty string
 			return $settingsGlobal['wpbc_outsideMesage'];
+		} else {
+			// return normal price
+			return $price;
 		}
-	 
-		// return normal price
-		return $price;
 	}
 	add_filter('woocommerce_get_price_html', 'sw_custom_variation_price', 10, 2);
 	
