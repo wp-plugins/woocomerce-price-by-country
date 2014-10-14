@@ -202,7 +202,11 @@ class woocommerce_price_by_country {
 	function get_item_from_session( $item_data = '' ) { 
 		global $woocommerce;
 		
-		$country = $_COOKIE['country'];
+		if (isset($_COOKIE['country'])) { 
+			$country = $_COOKIE['country']; 
+		} else { 
+			$country = ""; 
+		}
 		$countries = $this->get_countries();
 		if ( empty( $countries ) )
 			return;
@@ -240,7 +244,11 @@ class woocommerce_price_by_country {
 		global $product;
 		global $woocommerce;
 		
-		$country = $_COOKIE['country'];
+		if (isset($_COOKIE['country'])) { 
+			$country = $_COOKIE['country']; 
+		} else { 
+			$country = ""; 
+		}
 
 		$countries = $this->get_countries();
 		if ( empty( $countries ) )
@@ -361,7 +369,11 @@ class woocommerce_price_by_country {
 	
 	function is_purchasable( $purchasable, $_product ) { 
 		
-		$country = $_COOKIE['country'];
+		if (isset($_COOKIE['country'])) { 
+			$country = $_COOKIE['country']; 
+		} else { 
+			$country = ""; 
+		}
 		$countries = $this->get_countries();
 		
 		if ( empty( $countries ) )
@@ -410,7 +422,11 @@ class woocommerce_price_by_country {
 		
 	function maybe_return_price( $price = '', $_product ) { 
 		
-		$country = $_COOKIE['country'];
+		if (isset($_COOKIE['country'])) { 
+			$country = $_COOKIE['country']; 
+		} else { 
+			$country = ""; 
+		}
 		
 		$countries = $this->get_countries();
 		if ( empty( $countries ) )
@@ -480,7 +496,11 @@ class woocommerce_price_by_country {
 	
 	function maybe_adjust_variations( $variation = '', $obj = '' , $variation_obj  = '') { 
 		
-		$country = $_COOKIE['country'];
+		if (isset($_COOKIE['country'])) { 
+			$country = $_COOKIE['country']; 
+		} else { 
+			$country = ""; 
+		}
 			
 		foreach( $this->get_countries() as $group => $element ) {
 		
@@ -525,7 +545,11 @@ class woocommerce_price_by_country {
 	function maybe_return_variation_price_empty( $price, $_product ) {
 		global $product;
 		
-		$country = $_COOKIE['country'];
+		if (isset($_COOKIE['country'])) { 
+			$country = $_COOKIE['country']; 
+		} else { 
+			$country = ""; 
+		}
 
 		foreach( $this->get_countries() as $group => $element ) {
 			
@@ -557,7 +581,11 @@ class woocommerce_price_by_country {
 		global $product; // parent product object - global
 
 
-		$country = $_COOKIE['country'];
+		if (isset($_COOKIE['country'])) { 
+			$country = $_COOKIE['country']; 
+		} else { 
+			$country = ""; 
+		}
 
 		// Sometimes this hook runs when the price is empty but wholesale price is not, 
 		// So check for that and handle returning a price for archive page view
@@ -987,7 +1015,11 @@ add_action( 'after_setup_theme', 'pbc_get_permited_countries' );
 
 function pbc_get_permited_countries() {
 	
-	$country = $_COOKIE['country'];
+	if (isset($_COOKIE['country'])) { 
+		$country = $_COOKIE['country']; 
+	} else { 
+		$country = ""; 
+	}
 	
 	$settings = get_option( 'woocommerce_price_by_country_settings' );
 	
@@ -1011,6 +1043,7 @@ function pbc_get_permited_countries() {
 		endif;
 	
 	endif;
+	if (!isset($inList)) { $inList = "outside"; }
 	
 	$output = ($inList == 'yes') ? 'inside' : 'outside';
 	
