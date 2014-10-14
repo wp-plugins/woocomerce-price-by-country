@@ -940,7 +940,9 @@ function pbc_country_dropdown() {
 		
 		$woocommerce_specific_allowed_countries = get_option('woocommerce_specific_allowed_countries');
 		
-		$country_list = unserialize($woocommerce_specific_allowed_countries);
+		if($woocommerce_specific_allowed_countries):
+			$country_list = unserialize($woocommerce_specific_allowed_countries);
+		endif;
 	endif;
 	
 	//var_dump($c);
@@ -991,17 +993,22 @@ function pbc_get_permited_countries() {
 	
 	if($settings):
 	
-		foreach( unserialize($settings) as $group => $element ):
-			
-			if($element['countries']):
-				foreach($element['countries'] as $key => $countryL):
-					if($countryL == $country):
-						$inList = 'yes';
-					endif;
-				endforeach;
-			endif;
-			
-		endforeach;
+		$settingsArr = unserialize($settings);
+		
+		if(is_array($settingsArr)):
+	
+			foreach( $settingsArr  as $group => $element ):
+				
+				if($element['countries']):
+					foreach($element['countries'] as $key => $countryL):
+						if($countryL == $country):
+							$inList = 'yes';
+						endif;
+					endforeach;
+				endif;
+				
+			endforeach;
+		endif;
 	
 	endif;
 	
