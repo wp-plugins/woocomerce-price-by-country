@@ -3,7 +3,7 @@
 Plugin Name: WooCommerce Price by Country
 Plugin URI:  http://www.sweethomes.es
 Description: Allows you to set the prices of a product according to the user's country
-Version: 0.33	
+Version: 0.34	
 Author: Sweet Homes
 Author URI: http://www.sweethomes.es
 Email: info@sweethomes.es
@@ -30,6 +30,11 @@ class woocommerce_price_by_country {
 		
 		add_action(	'wp_enqueue_scripts', array( &$this, 'wpbc_enqueue_scripts' ), 1);
 		add_action(	'wp_footer', array( &$this, 'wpbc_footer_script' ), 1000);
+		
+		if (class_exists('woocommerce_wpml')) {
+		    add_action( 'admin_footer', array( &$this, 'wpbc_woo_multilingual_fix' ), 1000 );
+		}
+		
 	}
 
 	
@@ -150,6 +155,23 @@ class woocommerce_price_by_country {
 		
 	}
 
+	function wpbc_woo_multilingual_fix(){
+		
+		// this function fix the translation of prices
+
+		$inline_js = "<!-- WooCommerce price by country Woocomerce multilingual Fix -->\n<script type=\"text/javascript\">\n jQuery(document).ready(function($) { \n";
+
+                $inline_js .= "$('input[class^=\"group_level_\"]').each(function(){ \n";
+                    $inline_js .= "$(this).removeAttr('readonly');\n";
+                    $inline_js .= "$(this).parent().find('img').remove();\n";
+                $inline_js .= "});\n";
+
+		$inline_js .="\n});\n</script> \n";
+		
+		echo $inline_js;
+	}
+
+	
 
 	function wpbc_footer_script(){
 	
@@ -216,6 +238,7 @@ class woocommerce_price_by_country {
 	function maybe_return_wholesale_price( $price, $_product ) { 
 		
 		global $product;
+		global $woocommerce;
 		
 		$country = $_COOKIE['country'];
 
@@ -741,17 +764,33 @@ class woocommerce_price_by_country {
 	function add_simple_price() { 
 		global $thepostid;
 		
-		//print_r($this->get_countries());
+		
+		
+		function doer_of_stuff() {
+
+		    
+		  return new WP_Error( 'broke',  __( '<strong>Woocommerce Price By Country</strong> - You need to setup some country groups before enter, you can add some <a target="_blank" href="'.admin_url( 'admin.php?page=wc-settings&tab=integration&section=price_by_country' ).'">here</a>', 'woocomerce-price-by-country' ));
+		    
+		}
+		
+		$return = doer_of_stuff();
+		
+		
+		if($this->get_countries()){
 			
-		foreach( $this->get_countries() as $group => $element ) { 
-		
-			$wprice = get_post_meta( $thepostid, '_' . $group . '_price', true );
-		
-			woocommerce_wp_text_input( array( 'id' => $group . '_price', 'class' => 'wc_input_price short', 'label' => __('Price for', 'woocomerce-price-by-country').' '.$element['name'] . ' (' . get_woocommerce_currency_symbol() . ')', 'description' => '', 'type' => 'number', 'custom_attributes' => array(
-						'step' 	=> 'any',
-						'min'	=> '0'
-					), 'value' => $wprice ) );
-					
+			foreach( $this->get_countries() as $group => $element ) { 
+			
+				$wprice = get_post_meta( $thepostid, '_' . $group . '_price', true );
+			
+				woocommerce_wp_text_input( array( 'id' => $group . '_price', 'class' => 'wc_input_price short', 'label' => __('Price for', 'woocomerce-price-by-country').' '.$element['name'] . ' (' . get_woocommerce_currency_symbol() . ')', 'description' => '', 'type' => 'number', 'custom_attributes' => array(
+							'step' 	=> 'any',
+							'min'	=> '0'
+						), 'value' => $wprice ) );
+						
+			}
+		} elseif(is_wp_error( $return )){
+			$error_string = $return->get_error_message();
+			echo '<div id="message" class="error"><p>' . $error_string . '</p></div>';
 		}
 	}
 	
