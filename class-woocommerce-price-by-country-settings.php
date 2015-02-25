@@ -1,6 +1,6 @@
 <?php 
 /*
-Version: 0.34
+Version: 0.36
 Author: Sweet Homes
 Author URI: http://www.sweethomes.es
 Email: info@sweethomes.es
@@ -361,52 +361,52 @@ class Woocomerce_Price_by_Country_Settings extends WC_Integration {
 		<tr>
 			<th></th>
 			<td><button type="button" class="button" id="wpbc_add_new_group"><?php _e( 'Add New Group', 'woocomerce-price-by-country' )?></button></td>
-		<?php 
 		
-		
+		<script type="text/javascript">
+				jQuery('.all_button').live('click', function(){
+					var self = jQuery(this),
+						parentTD = self.parent();
+					parentTD.find('select option').attr("selected","selected");
+					parentTD.find('select').trigger('chosen:updated');
+					return false;
+				});
+
+				jQuery('.none_button').live('click', function(){
+					var self = jQuery(this),
+						parentTD = self.parent();
+					parentTD.find('select option').removeAttr("selected");
+					parentTD.find('select').trigger('chosen:updated');
+					return false;
+				});
+
+				jQuery('.es_button').live('click', function(){
+					var self = jQuery(this),
+						parentTD = self.parent();
+					parentTD.find('option[value="ES"]').attr("selected","selected");
+					parentTD.find('select').trigger('chosen:updated');
+					return false;
+				});
+
+				jQuery('.usa_button').live('click', function(){
+					var self = jQuery(this),
+						parentTD = self.parent();
+					parentTD.find('option[value="US"]').attr("selected","selected");
+					parentTD.find('select').trigger('chosen:updated');
+					return false;
+				});
+
+				jQuery('.eu_button').live('click', function(){
+					var self = jQuery(this),
+						parentTD = self.parent();
+					parentTD.find('option[value="AL"], option[value="AD"], option[value="AM"], option[value="AT"], option[value="BY"], option[value="BE"], option[value="BA"], option[value="BG"], option[value="CH"], option[value="CY"], option[value="CZ"], option[value="DE"], option[value="DK"], option[value="EE"], option[value="ES"], option[value="FO"], option[value="FI"], option[value="FR"], option[value="GB"], option[value="GE"], option[value="GI"], option[value="GR"], option[value="HU"], option[value="HR"], option[value="IE"], option[value="IS"], option[value="IT"], option[value="LT"], option[value="LU"], option[value="LV"], option[value="MC"], option[value="MK"], option[value="MT"], option[value="NO"], option[value="NL"], option[value="PO"], option[value="PT"], option[value="RO"], option[value="RU"], option[value="SE"], option[value="SI"], option[value="SK"], option[value="SM"], option[value="TR"], option[value="UA"], option[value="VA"]').attr("selected","selected");
+					parentTD.find('select').trigger('chosen:updated');
+					return false;
+				});
+			</script>
+		<?php
+
 		// preset buttons
-		
-		$woocommerce->add_inline_js("
-			jQuery('.all_button').live('click', function(){
-				var self = jQuery(this),
-					parentTD = self.parent();
-				parentTD.find('select option').attr(\"selected\",\"selected\");
-				parentTD.find('select').trigger('chosen:updated');
-				return false;
-			});
 
-			jQuery('.none_button').live('click', function(){
-				var self = jQuery(this),
-					parentTD = self.parent();
-				parentTD.find('select option').removeAttr(\"selected\");
-				parentTD.find('select').trigger('chosen:updated');
-				return false;
-			});
-
-			jQuery('.es_button').live('click', function(){
-				var self = jQuery(this),
-					parentTD = self.parent();
-				parentTD.find('option[value=\"ES\"]').attr(\"selected\",\"selected\");
-				parentTD.find('select').trigger('chosen:updated');
-				return false;
-			});
-			
-			jQuery('.usa_button').live('click', function(){
-				var self = jQuery(this),
-					parentTD = self.parent();
-				parentTD.find('option[value=\"US\"]').attr(\"selected\",\"selected\");
-				parentTD.find('select').trigger('chosen:updated');
-				return false;
-			});
-
-			jQuery('.eu_button').live('click', function(){
-				var self = jQuery(this),
-					parentTD = self.parent();
-				parentTD.find('option[value=\"AL\"], option[value=\"AD\"], option[value=\"AM\"], option[value=\"AT\"], option[value=\"BY\"], option[value=\"BE\"], option[value=\"BA\"], option[value=\"BG\"], option[value=\"CH\"], option[value=\"CY\"], option[value=\"CZ\"], option[value=\"DE\"], option[value=\"DK\"], option[value=\"EE\"], option[value=\"ES\"], option[value=\"FO\"], option[value=\"FI\"], option[value=\"FR\"], option[value=\"GB\"], option[value=\"GE\"], option[value=\"GI\"], option[value=\"GR\"], option[value=\"HU\"], option[value=\"HR\"], option[value=\"IE\"], option[value=\"IS\"], option[value=\"IT\"], option[value=\"LT\"], option[value=\"LU\"], option[value=\"LV\"], option[value=\"MC\"], option[value=\"MK\"], option[value=\"MT\"], option[value=\"NO\"], option[value=\"NL\"], option[value=\"PO\"], option[value=\"PT\"], option[value=\"RO\"], option[value=\"RU\"], option[value=\"SE\"], option[value=\"SI\"], option[value=\"SK\"], option[value=\"SM\"], option[value=\"TR\"], option[value=\"UA\"], option[value=\"VA\"]').attr(\"selected\",\"selected\");
-				parentTD.find('select').trigger('chosen:updated');
-				return false;
-			});
-		");
 		
 		echo '</tr>';
 		

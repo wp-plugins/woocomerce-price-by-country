@@ -3,7 +3,7 @@ Contributors: Sweet Homes
 Tags: woocommerce, price by country, extension, geoprice
 Donate link: http://www.sweethomes.es/
 Requires at least: 3.0.1
-Tested up to: 3.8.1
+Tested up to: 4
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -37,7 +37,16 @@ bug fixes
 0.32
 bug fixes
 
-* Requires WooCommerce 2.x or newer.
+0.34
+Solved bugfix with wpml and woocommerce multilingual
+
+0.35
+Applied GoGlobal program suggestions to our code
+
+0.36
+Solved DEPRECATED functions
+
+* Requires WooCommerce 2.2.x or newer.
 
 == Installation ==
 1. Upload "woocommerce-price-by-country" folder to the "/wp-content/plugins/" directory.
@@ -45,7 +54,8 @@ bug fixes
 3. go to woocommerce > settings > integration tab > price by country option.
 4. push add new group button an then add many country groups as you like.
 5. go to product and define it's price by group.
-6. if you enter a country selector on your theme adds this code: do_action('get_pbc_country_dropdown')
+6. if you enter a country selector on your theme adds this code: do_action('get_pbc_country_dropdown'),
+7. In simple products regular price set to "empty" and in variable products set price to "0"
 
 == Frequently Asked Questions ==
 
@@ -56,6 +66,11 @@ Yes, of course.
 = You can add a country selector somewhere template =
 
 Yes, adding "do_action('get_pbc_country_dropdown')"; .
+
+= If you use Woocomerce multilingual =
+
+you must set "Go to the native WooCommerce product editing screen" in "Product Translation Interface"
+
 
 == Screenshots ==
 1. Settings Section
@@ -79,7 +94,12 @@ Yes, adding "do_action('get_pbc_country_dropdown')"; .
 - Dropdown bugfix.
 = 0.33 =
 - price fix in variable products.
-
+= 0.34 =
+- Woocommerce multilingual fix, and wpml fix.
+= 0.35 =
+- Applied GoGlobal program suggestions to our code.
+= 0.36 =
+- Solved DEPRECATED functions
 
 == Upgrade Notice ==
 = 0.1 =
@@ -94,3 +114,9 @@ Yes, adding "do_action('get_pbc_country_dropdown')"; .
 * Bug Fixes.
 = 0.33 =
 * Bug Fixes.
+= 0.34 =
+- Woocommerce multilingual fix, and wpml fix.
+= 0.35 =
+- Applied GoGlobal program suggestions to our code.
+= 0.36 =
+- Solved DEPRECATED functions

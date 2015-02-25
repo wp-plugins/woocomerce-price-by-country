@@ -3,7 +3,7 @@
 Plugin Name: WooCommerce Price by Country
 Plugin URI:  http://www.sweethomes.es
 Description: Allows you to set the prices of a product according to the user's country
-Version: 0.34	
+Version: 0.36
 Author: Sweet Homes
 Author URI: http://www.sweethomes.es
 Email: info@sweethomes.es
@@ -428,9 +428,16 @@ class woocommerce_price_by_country {
 			$country = ""; 
 		}
 		
+		$iswcmlActive = $this->wpbc_is_wcml_active();
+		
 		$countries = $this->get_countries();
-		if ( empty( $countries ) )
-			return $price;
+		if ( empty( $countries ) ):
+			if($iswcmlActive):
+				return apply_filters('wcml_raw_price_amount', $price);
+			else:
+				return $price;
+			endif;
+		endif;
 			
 		foreach( $this->get_countries() as $group => $element ) {
 		
@@ -462,8 +469,11 @@ class woocommerce_price_by_country {
 				//if ( isset( $_product->product_custom_fields[ '_' . $group . '_price' ] ) && is_array( $_product->product_custom_fields[ '_' . $group . '_price'] ) && $_product->product_custom_fields[ '_' . $group . '_price'][0] > 0 ) {
 
 				if(isset($customPrice) && $customPrice > 0){
-
-					$price = $customPrice;
+					if($iswcmlActive):
+						$price = apply_filters('wcml_raw_price_amount', $customPrice);
+					else:
+						$price = $customPrice;
+					endif;
 
 				} elseif ( $_product->price === '' ) {
 					$price = '';
@@ -472,23 +482,37 @@ class woocommerce_price_by_country {
 					$price = __( 'Free!', 'woocomerce-price-by-country' );
 					
 				}
-				return $price; 
 				
+				if($iswcmlActive):
+					return apply_filters('wcml_raw_price_amount', $price);
+				else:
+					return $price;
+				endif;
 
 			}
 
 			$tier_price = get_post_meta( $_product->id, '_' . $group . '_price', true );
 			
-			if ( empty( $tier_price ) ) 
-				return $price;
-			else 
-				return $tier_price;
-
+			if ( empty( $tier_price ) ): 
+				if($iswcmlActive):
+					return apply_filters('wcml_raw_price_amount', $price);
+				else:
+					return $price;
+				endif;
+			else:
+				if($iswcmlActive):
+					return apply_filters('wcml_raw_price_amount', $tier_price);
+				else:
+					return $tier_price;
+				endif;
+			endif;
+				
 		}
-		
-		//die();
-
-		return $price;
+		if($iswcmlActive):
+			return apply_filters('wcml_raw_price_amount', $price);
+		else:
+			return $price;
+		endif;
 	}
 	
 	
@@ -762,16 +786,13 @@ class woocommerce_price_by_country {
 	
 	
 	
-	
 	function add_variable_attributes( $loop, $variation_data ) { 
 		
 		foreach( $this->get_countries() as $group => $element ) {  
-		
 			$wprice = get_post_meta( $variation_data['variation_post_id'], '_' . $group . '_price', true );
-			
+
 			if ( !$wprice )
 				$wprice = '';
-		
 			?>
 			<tr>
 				<td>
@@ -779,7 +800,6 @@ class woocommerce_price_by_country {
 					<label><?php echo $element['name']; echo ' ('.get_woocommerce_currency_symbol().')'; ?> <a class="tips" data-tip="<?php _e( 'Enter the price for ', 'woocomerce-price-by-country' ); echo $element['name'] ?>" href="#">[?]</a></label>
 					<input class="<?php echo $group ?>_price" type="number" size="99" name="<?php echo $group ?>_price[<?php echo $loop; ?>]" value="<?php echo $wprice ?>" step="any" min="0" placeholder="<?php _e( 'Set price ( optional )', 'woocomerce-price-by-country' ) ?>"/>
 					</div>
-					
 				</td>
 			</tr>
 			<?php
@@ -792,11 +812,7 @@ class woocommerce_price_by_country {
 	function add_simple_price() { 
 		global $thepostid;
 		
-		
-		
 		function doer_of_stuff() {
-
-		    
 		  return new WP_Error( 'broke',  __( '<strong>Woocommerce Price By Country</strong> - You need to setup some country groups before enter, you can add some <a target="_blank" href="'.admin_url( 'admin.php?page=wc-settings&tab=integration&section=price_by_country' ).'">here</a>', 'woocomerce-price-by-country' ));
 		    
 		}
@@ -836,6 +852,16 @@ class woocommerce_price_by_country {
 			return unserialize($settings);
 		endif;
 	}
+	
+	
+	function wpbc_is_wcml_active (){
+		if ( in_array( 'woocommerce-multilingual/wpml-woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
+			return true;
+		} else {
+	        return false;     
+		}
+	}
+	
 
 }
 
@@ -1050,6 +1076,24 @@ function pbc_get_permited_countries() {
 	return $output;
 	
 }
+
+
+function get_country_alt() { // thanks to murphvienna -- https://wordpress.org/support/profile/murphvienna
+	
+    if (isset($_COOKIE) && isset($_COOKIE['country']) && !empty($_COOKIE['country'])) {
+        # user has set a cookie - use its value
+        return $_COOKIE['country'];
+    } else {
+        # do a country lookup by GeoIP, cURL, or just set a default value.
+        $country = 'DE';
+
+        # then set this country as a cookie directly with PHP.
+        # the cookie will be valid from next request on.
+        setcookie('country', $country, time()+86400, '/');
+        return $country;
+    }
+}
+
 
 
 $countries = pbc_get_permited_countries();
